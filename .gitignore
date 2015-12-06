@@ -1,5 +1,7 @@
+#ignore all of the nw crap
 *
-
-!.gitignore
-!app/
+#don't ignore the stuff I made
+!/app/
+!/app/*
 !package.json
+!.gitignore
