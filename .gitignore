@@ -1,4 +1,5 @@
 *
-!app/*
-!package.json
+
 !.gitignore
+!app/
+!package.json
