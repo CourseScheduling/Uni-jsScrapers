@@ -20,14 +20,67 @@
     
 */
     
+/*
 
 
+
+DB SCHEMA
+
+
+                ___________________________________________________________________________________________________
+Table: Courses | id | term | year | crn | subject | code | section | name | credits | campus | status | insertTime | 
+                ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+                  |_______
+                         |
+                         v
+              ______________________________________________________________________________________________________________
+Table: Times | id | courseId | startDate | endDate | days | startTime | endTime | building | room | instructor | insertTime |
+              ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+                         |
+                         |
+                         v
+                _____________________________________________________
+Table: Prereqs | id | courseId | subject | code | grade | insertTime | 
+                ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+                         |_____
+                              |
+                              v
+                     ____________________________________________________
+Table: Restrictions | id | courseId | type | value | action | insertTime |
+                     ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+ 
+
+ 
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+//require('nw.gui').Window.get().showDevTools() 
 //Our daily reminder
 var JosephIsAwesome =   true;
 //Initialize constants
 var SEMESTER    =   "Winter"; //Can be Summer, Winter or, Fall
 var YEAR    =   "2016"; //Remember this is 1 year after the year you're in typing this.
-var INTERACIVE_SESSION  =   "320016";
+var INTERACTIVE_SESSION  =   "320108";
+
+var HTML_STORE  =   document.getElementById('contentStore');
 
 var SEMESTER_OBJECT  =   {
     Fall:"09"
@@ -46,22 +99,27 @@ var COURSE_URL  =   [
     "https://warden.ufv.ca:8910/prod/bwysched.p_display_course?wsea_code=CRED&term_code=",
     YEAR,
     SEMESTER_OBJECT[SEMESTER],
-    "session_id=",
-    INTERACIVE_SESSION,
+    "&session_id=",
+    INTERACTIVE_SESSION,
     "&crn="
 ].join('');
+
+//The type of data we're going to put into the DB
+
 
 var CRN_ARRAY    =   [];
 
 
 
 //Grab the crnData
-$.get({
+_.get({
     url:CRN_URL,
-    sync:true,
+    json:false,
     done:function(data){
         //Remove all the html and create an array of every 5 digit number
-        CRN_ARRAY   =   data.replace(/(<([^>]+)>)/ig,"").match(/(\d\d\d\d\d)/g);
+        HTML_STORE.innerHTML=data; 
+        //Get all 5 digit numbers in the last html element,convert it to a number and store it as a number into the CRN_ARRAY
+        CRN_ARRAY   =   HTML_STORE.lastChild.innerHTML.replace(/(<([^>]+)>)/ig,"").match(/(\d\d\d\d\d)/g).map(Number);
         //Start the program!
         main();
     }
@@ -70,9 +128,117 @@ $.get({
 
 
 
+    var possibleGrades  =   [
+        "D-"," D"," D+",
+        "C-"," C"," C+",
+        "B-"," B"," B+",
+        "A-"," A"," A+"                        
+    ];
 
 
 
+//Parser for the basic course info
+function parseCourseBasic(DOM){
+    var fields  =   [
+        "CRN:",
+        "Subject:",
+        "Title:",
+        "Academic Credits:",
+        "Schedule Type:",
+        "Campus:",
+        "Status:"
+    ];
+    var JSON    =   {
+        crn:"",
+        subject:"",
+        status:"",
+        code:0.0,
+        section:"",
+        name:"",
+        credits:"",
+        campus:"",
+        type:"",
+        status:""
+    };
+    
+    
+    [].forEach.call(DOM.getElementsByTagName('tbody')[2].children,function(v,i,a){
+        if(!(v.children[0]!==undefined&&v.children[0].innerHTML!=="&nbsp;"))
+            return;
+        if(v.children[1]==undefined)
+            return
+        var index = fields.indexOf(v.children[0].innerHTML.trim());
+        if(index<0)
+            return;
+        var childValue  = (function find(el){
+            if(el.children.length<=0)
+                return el.innerHTML.trim();
+            else
+                return find(el.firstChild);
+        })(v.children[1]);
+        switch(index){
+            case 0:JSON.crn =   parseInt(childValue);break;
+            case 1:
+                var subjectArray    =   childValue.split(' ');
+                JSON.subject =   subjectArray[0];
+                JSON.code =   subjectArray[1];
+                JSON.section =   subjectArray[2];
+            break;
+            case 2:JSON.name    =   childValue;break;
+            case 3:JSON.credits =   parseFloat(childValue);break;
+            case 4:JSON.type    =   childValue;break;
+            case 5:JSON.campus  =   childValue;break;
+            case 6:JSON.status  =   childValue;break;
+        }
+    });
+    console.log(JSON);
+}
+
+function timesParse(DOM){
+    
+    [].forEach.call(DOM.getElementsByTagName('tbody')[3].children,function(v,i,a){
+        /*
+            How the system is set up
+            Node
+                Node - StartDate "to" EndDate
+                Node - Days
+                Node - startTime " - " endTime
+                Node - Building
+                Node - Room
+                Node - Type
+                Node - Instructor
+                Node - Type
+        */
+        var DayArray    =   {
+            Mon:0,
+        }
+        var JSON    =   {
+            startDate:"",
+            endDate:"",
+            building:"",
+            room:"",
+            instructor:"",
+            startTime:"",
+            endTime:""
+        }
+        
+        var childValue  = (function find(el){
+            if(el.children.length<=0)
+                return el.innerHTML.trim();
+            else
+                return find(el.firstChild);
+        })(v.firstChild);
+        var a = new Date(childValue.split(' to ')[0]);
+        if(a=="Invalid Date")
+            return;
+        
+        JSON.startDate  =   new Date(childValue.split(' to ')[0]);
+        JSON.endDate    =   new Date(childValue.split(' to ')[1]);
+        
+        
+        
+    });
+}
 
 
 
@@ -102,5 +268,14 @@ $.get({
 
 
 function main(){
-    
+            setInterval(function(){
+    _.get({
+        url:COURSE_URL+CRN_ARRAY[parseInt(Math.random()*CRN_ARRAY.length)],
+        json:false,
+        done:function(html){
+            HTML_STORE.innerHTML=html;
+                parseCourseBasic(HTML_STORE);
+        }
+    });
+            },3000);
 }

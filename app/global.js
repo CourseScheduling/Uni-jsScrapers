@@ -10,13 +10,17 @@
             data:{this:is,optional:0}
         });
 */
-$   =   {
+_   =   {
     get:function(e){
         var request = new XMLHttpRequest();
         request.open('GET',e.url, true);
         request.onload = function() {
           if (request.status >= 200 && request.status < 400) {
-              e.done(JSON.parse(request.responseText));
+              if(e.json){
+                e.done(JSON.parse(request.responseText));
+              }else{
+                e.done(request.responseText);
+              }
           } else {
 
           }
