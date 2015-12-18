@@ -1,8 +1,0 @@
-#ignore all of the nw crap
-*
-#don't ignore the stuff I made
-!/app/
-!/app/*
-!package.json
-!README.md
-!.gitignore

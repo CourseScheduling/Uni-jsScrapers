@@ -72,6 +72,12 @@ Table: Restrictions | id | courseId | type | value | action | insertTime |
 
 
 */
+// Load all the libraries
+
+var fs  =   require('fs');
+
+
+
 //require('nw.gui').Window.get().showDevTools() 
 //Our daily reminder
 var JosephIsAwesome =   true;
@@ -112,19 +118,31 @@ var CRN_ARRAY    =   [];
 
 
 //Grab the crnData
-_.get({
-    url:CRN_URL,
-    json:false,
-    done:function(data){
-        //Remove all the html and create an array of every 5 digit number
-        HTML_STORE.innerHTML=data; 
-        //Get all 5 digit numbers in the last html element,convert it to a number and store it as a number into the CRN_ARRAY
-        CRN_ARRAY   =   HTML_STORE.lastChild.innerHTML.replace(/(<([^>]+)>)/ig,"").match(/(\d\d\d\d\d)/g).map(Number);
-        //Start the program!
+fs.readFile('./crns.dat',function(err,data){
+    if(data === undefined){
+        console.log('data file Does Not Exist');
+        _.get({
+            url:CRN_URL,
+            json:false,
+            done:function(data){
+                //Remove all the html and create an array of every 5 digit number
+                HTML_STORE.innerHTML=data; 
+                //Get all 5 digit numbers in the last html element,convert it to a number and store it as a number into the CRN_ARRAY
+                CRN_ARRAY   =   HTML_STORE.lastChild.innerHTML.replace(/(<([^>]+)>)/ig,"").match(/(\d\d\d\d\d)/g);
+                fs.writeFile('./crns.dat',CRN_ARRAY.join('.'));
+                //Start the program!
+                main();
+            }
+        });
+        
+        return;
+    }else{
+        console.log('data file Exists');
+        CRN_ARRAY   =   data.toString().split('.');
         main();
+        return;
     }
 });
-
 
 
 
@@ -234,8 +252,7 @@ function timesParse(DOM){
         
         JSON.startDate  =   new Date(childValue.split(' to ')[0]);
         JSON.endDate    =   new Date(childValue.split(' to ')[1]);
-        
-        
+         
         
     });
 }
