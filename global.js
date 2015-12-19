@@ -13,7 +13,21 @@
 var request =   require('request');
 _   =   {
     get:function(e){
-        request(e.url, function(error, response, body) {
+				//Get rid of the self signed error 
+				process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+        request({
+					url:e.url,
+					headers: {
+						'User-Agent': 'Schedular.io'
+					}
+				}, function(error, response, body) {
+          if (response==undefined || error || response.statusCode !== 200) {
+							console.log('Problem in the UFV scraper');
+							console.log('DEBUG URL: '+e.url);
+							console.log('DEBUG ERROR: '+error);
+              return;
+          }
           if(e.json){
             e.done(JSON.parse(body));
           }else{
