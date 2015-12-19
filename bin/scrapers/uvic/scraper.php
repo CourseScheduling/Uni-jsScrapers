@@ -2,7 +2,7 @@
 global $separator;
 $separator = "\r\n";
 $debugFile = "debug.html";
-
+/*
 $workingDir = dirname(__FILE__)."/course.data";
 
 // Change working directory
@@ -10,7 +10,7 @@ if(!file_exists($workingDir)){
     mkdir($workingDir);
 }
 chdir($workingDir);
-
+*/
 // ===== Helper functions ======================================================
 function postRequest($url, $data=array()){
     $options = array(
@@ -99,48 +99,38 @@ function translateDateRange($daterange){
 }
 
 // ===== Get the IDs for the 3 most recent terms ===============================
-echo 'Fetching page with term list'.PHP_EOL;
+//echo 'Fetching page with term list'.PHP_EOL;
 $url = 'https://www.uvic.ca/BAN2P/bwckschd.p_disp_dyn_sched';
 $pageContent = postRequest($url);
 
 // Process page content line by line until the IDs for the terms are found
-echo 'Parsing page'.PHP_EOL;
+//echo 'Parsing page'.PHP_EOL;
 $line = seekToPattern('/ID="term_input_id"/', $pageContent);
 $line = strtok($separator);
-echo "preg".PHP_EOL;
+//echo "preg".PHP_EOL;
 if(!preg_match('/VALUE="">None/', $line, $matches)){
-    echo 'Unexpected first value in term selection - should be None but it is this:'.PHP_EOL;
-    echo $line.PHP_EOL;
+    //echo 'Unexpected first value in term selection - should be None but it is this:'.PHP_EOL;
+    //echo $line.PHP_EOL;
 }
 
 $line = strtok($separator);
 preg_match('/VALUE="(\d+)"/', $line, $matches);
-$terms[0] = $matches[1];
-echo "DEBUG: term[0] = ${terms[0]}".PHP_EOL;
+$term = $matches[1];
 
-$line = strtok($separator);
-preg_match('/VALUE="(\d+)"/', $line, $matches);
-$terms[1] = $matches[1];
-echo "DEBUG: term[1] = ${terms[1]}".PHP_EOL;
 
-$line = strtok($separator);
-preg_match('/VALUE="(\d+)"/', $line, $matches);
-$terms[2] = $matches[1];
-echo "DEBUG: term[2] = ${terms[2]}".PHP_EOL;
-
-foreach($terms as $term){
 
     // Create or empty previous file
+/*
     $outputfile = "${term}.courselist";
     if(file_exists($outputfile)){
         rename($outputfile, "${outputfile}.last");
     }
 
-
+*/
 
     // ===== Get list of subjects for this term ====================================
 
-    echo "Fetching subject list for term $term".PHP_EOL;
+    //echo "Fetching subject list for term $term".PHP_EOL;
     $url = 'https://www.uvic.ca/BAN2P/bwckgens.p_proc_term_date';
     $data = array('p_calling_proc' => 'bwckschd.p_disp_dyn_sched', 'p_term' => $term);
     $pageContent = postRequest($url, $data);
@@ -158,18 +148,18 @@ foreach($terms as $term){
     }
 
     // Prepare output heading
-    $textrow = "CRN!Subject!Course!Section!Credits!Name!Days!Time!Capacity!Actual!Remaining!WLCapacity!WLActual!WLRemaining!XLCapacity!XLActual!XLRemaining!Instructor!Date!Room";
-    $output = $textrow.PHP_EOL;
+    //$textrow = "CRN!Subject!Course!Section!Credits!Name!Days!Time!Capacity!Actual!Remaining!WLCapacity!WLActual!WLRemaining!XLCapacity!XLActual!XLRemaining!Instructor!Date!Room";
+    $output = '';//$textrow.PHP_EOL;
 
     // ===== Get data for each subject =============================================
-    echo "Iterating through each subject".PHP_EOL;
+    //echo "Iterating through each subject".PHP_EOL;
     $url = 'http://www.uvic.ca/BAN2P/bwckschd.p_get_crse_unsec';
 
     // Iterate through courses
     foreach($subjects as $subject){
         
         // Get  all courses for $subject
-        echo "Getting $subject courses".PHP_EOL;
+        //echo "Getting $subject courses".PHP_EOL;
         $data = "term_in=${term}&sel_subj=dummy&sel_day=dummy&sel_schd=dummy&sel_insm=dummy&sel_camp=dummy&sel_levl=dummy&sel_sess=dummy&sel_instr=dummy&sel_ptrm=dummy&sel_attr=dummy&sel_subj=${subject}&sel_crse=&sel_title=&sel_schd=%25&sel_insm=%25&sel_from_cred=&sel_to_cred=&sel_camp=%25&sel_levl=%25&sel_ptrm=%25&sel_instr=%25&begin_hh=0&begin_mi=0&begin_ap=a&end_hh=0&end_mi=0&end_ap=a";
         $pageContent = postRequestOverride($url, $data);
 
@@ -283,16 +273,16 @@ foreach($terms as $term){
 
             // Seek to next course/section if there is another one on this page
             $line = seekToNextPattern('/CLASS="ddtitle"/', $pageContent);
-
-        file_put_contents($outputfile, $output, FILE_APPEND);
+					echo $output;
+        //file_put_contents($outputfile, $output, FILE_APPEND);
         $output = "";
         }
     }
-    echo "Finished getting courses for ${term}".PHP_EOL;
+    //echo "Finished getting courses for ${term}".PHP_EOL;
 
     // Upload to file to server
     // Trigger import script with API call
-}
+
 
 //file_put_contents($debugFile, $pageContent);
-echo 'Done'.PHP_EOL;
+echo 'DONE'.PHP_EOL;
