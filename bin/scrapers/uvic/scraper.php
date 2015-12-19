@@ -286,3 +286,4 @@ $term = $matches[1];
 
 //file_put_contents($debugFile, $pageContent);
 echo 'DONE'.PHP_EOL;
+?>
