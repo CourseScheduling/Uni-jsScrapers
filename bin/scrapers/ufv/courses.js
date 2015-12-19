@@ -177,7 +177,9 @@ function timesParse(DOM){
 						JSON.endDate	=	data.split(' to ')[1];
 					break;
 					case 3:
-						JSON.days	=	data.split(' ');
+						JSON.days	=	data.split(' ').map(function(day){
+							return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(day);
+						}).join('');
 					break;
 					case 5:
 						JSON.startTime	=	data.split(' - ')[0];
