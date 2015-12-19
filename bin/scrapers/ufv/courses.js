@@ -147,52 +147,52 @@ function parseCourseBasic(DOM){
 				}
 			});
 		});
-	
+	console.log(JSON);
 }
 
+
 function timesParse(DOM){
-    
-    [].forEach.call(DOM.getElementsByTagName('tbody')[3].children,function(v,i,a){
-        /*
-            How the system is set up
-            Node
-                Node - StartDate "to" EndDate
-                Node - Days
-                Node - startTime " - " endTime
-                Node - Building
-                Node - Room
-                Node - Type
-                Node - Instructor
-                Node - Type
-        */
-        var DayArray    =   {
-            Mon:0,
-        }
-        var JSON    =   {
-            startDate:"",
-            endDate:"",
-            building:"",
-            room:"",
-            instructor:"",
-            startTime:"",
-            endTime:""
-        }
-        
-        var childValue  = (function find(el){
-            if(el.children.length<=0)
-                return el.innerHTML.trim();
-            else
-                return find(el.firstChild);
-        })(v.firstChild);
-        var a = new Date(childValue.split(' to ')[0]);
-        if(a=="Invalid Date")
-            return;
-        
-        JSON.startDate  =   new Date(childValue.split(' to ')[0]);
-        JSON.endDate    =   new Date(childValue.split(' to ')[1]);
-         
-        
-    });
+	var timeArray	=	[];
+    DOM('.dataentrytable').get(1).children.forEach(function(v,i,a){
+			if(i==1||v.type=="text")
+				return;
+			var JSON	={
+				startDate:'',
+				endDate:'',
+				days:[''],
+				startTime:'',
+				endTime:'',
+				instructor:''
+			}
+			if(v==undefined||v.children==undefined||v.children.length==1)
+				return;
+			v.children.forEach(function(v,i,a){
+				if(v.type=="text")
+					return;
+				var data	=	v.children[0].data;
+				//console.log(data,i);
+				switch(i){
+					case 1:
+						JSON.startDate	=	data.split(' to ')[0];
+						JSON.endDate	=	data.split(' to ')[1];
+					break;
+					case 3:
+						JSON.days	=	data.split(' ');
+					break;
+					case 5:
+						JSON.startTime	=	data.split(' - ')[0];
+						JSON.endTime	=	data.split(' - ')[1];
+					break;
+					case 13:
+						JSON.instructor	=	data;
+					break;
+				}
+			});
+			
+			
+			timeArray.push(JSON);
+		});
+	console.log(timeArray);
 }
 
 
@@ -227,6 +227,7 @@ function main(){
             done:function(html){
 								var document = cheerio.load(html);
 								parseCourseBasic(document);
+								timesParse(document);
             }
         });
     },3000);
