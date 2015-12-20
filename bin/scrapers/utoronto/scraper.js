@@ -37,11 +37,10 @@ function fetchHash(){
 
 
 // Yay, let's get this party started
-
+fetchHash();
 
 
 module.exports	=	{
 	start:fetchHash,
-	forceReset:fetchNew,
-	stop:
-}
+	forceReset:fetchNew
+};
