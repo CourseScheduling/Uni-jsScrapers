@@ -147,7 +147,7 @@ function parseCourseBasic(DOM){
 				}
 			});
 		});
-	console.log(JSON);
+	return JSON;
 }
 
 
@@ -194,7 +194,7 @@ function timesParse(DOM){
 			
 			timeArray.push(JSON);
 		});
-	console.log(timeArray);
+	return timeArray;
 }
 
 
@@ -228,8 +228,9 @@ function main(){
             json:false,
             done:function(html){
 								var document = cheerio.load(html);
-								parseCourseBasic(document);
-								timesParse(document);
+								var courseInfo	=	parseCourseBasic(document);
+								var times	=	timesParse(document);
+								dbParser.pushData()
             }
         });
     },3000);

@@ -5,7 +5,7 @@ _.get({
 	json:true,
 	done:function(data){
 		for(var course in data.courses){
-			console.log(data.courses[course][0].tu);
+			console.log(data.courses[course][0]);
 		}
 	}
 });
