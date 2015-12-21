@@ -211,8 +211,8 @@ $term = $matches[1];
                 $line = strtok($separator);
                 preg_match('/>([^<>]+)</', $line, $matches);
                 if($matches[1] != 'Every Week'){
-                    echo "This one doesn't say every week!".PHP_EOL;
-                    echo $line.PHP_EOL;
+                   // echo "This one doesn't say every week!".PHP_EOL;
+                   // echo $line.PHP_EOL;
                 }
 
                 $line = strtok($separator);
