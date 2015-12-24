@@ -11,5 +11,22 @@ var connection = mysql.createConnection({
 	password	:	'joseph'
 });
 connection.connect();
-
-module.exports = connection;
+var blah	=	{
+	query:function(sql,vals,done){
+		connection.query(sql,vals,done);
+	},
+	insert:function(table,values,done){
+		var columns	=	"";
+		var questions	=	"";
+		var stuffArray	=	[];
+		for(var i in values){
+			stuffArray.push(values[i]);
+			columns+=(i+',');
+			questions+="?,";
+		}
+		columns	=	columns.slice(0,-1);
+		questions	=	questions.slice(0,-1);
+		connection.query('INSERT INTO '+table+' ('+columns+') VALUES ('+questions+')',stuffArray,done);
+	}
+}
+module.exports = blah;

@@ -2,6 +2,7 @@
 // Load all the libraries
 var fs  =   require('fs');
 var cheerio = require('cheerio');
+var dbParser	=	require('./dbParser');
 var _   =   require('../../../global');
 
 //require('nw.gui').Window.get().showDevTools() 
@@ -106,7 +107,6 @@ function parseCourseBasic(DOM){
     ];
     var JSON    =   {
         crn:"",
-        subject:"",
         status:"",
         code:"",
         section:"",
@@ -114,10 +114,11 @@ function parseCourseBasic(DOM){
         credits:0.0,
         campus:"",
         type:"",
-        status:""
+        status:"",
+				term:SEMESTER+' '+YEAR
     };
 			var index = 0;
-    DOM('.dataentrytable').get(0).children.forEach(function(v,i,a){
+    DOM('.dataentrytable')[0].children.forEach(function(v,i,a){
 			if(v.type=="text")
 				return;
 			v.children.forEach(function(v,i,a){
@@ -135,8 +136,7 @@ function parseCourseBasic(DOM){
 						case 0:JSON.crn =   parseInt(childValue);break;
 						case 1:
 								var subjectArray    =   childValue.split(' ');
-								JSON.subject =   subjectArray[0];
-								JSON.code =   subjectArray[1];
+								JSON.code =   subjectArray[0]+subjectArray[1];
 								JSON.section =   subjectArray[2];
 						break;
 						case 2:JSON.name    =   childValue;break;
@@ -153,7 +153,10 @@ function parseCourseBasic(DOM){
 
 function timesParse(DOM){
 	var timeArray	=	[];
-    DOM('.dataentrytable').get(1).children.forEach(function(v,i,a){
+	if(DOM('.dataentrytable')[1]==undefined)
+		return timeArray;
+	
+    DOM('.dataentrytable')[1].children.forEach(function(v,i,a){
 			if(i==1||v.type=="text")
 				return;
 			var JSON	={
@@ -182,19 +185,32 @@ function timesParse(DOM){
 						}).join('');
 					break;
 					case 5:
-						JSON.startTime	=	data.split(' - ')[0];
-						JSON.endTime	=	data.split(' - ')[1];
+						JSON.startTime	=	toMin(data.split(' - ')[0]);
+						JSON.endTime	=	toMin(data.split(' - ')[1]);
 					break;
 					case 13:
 						JSON.instructor	=	data;
 					break;
 				}
+				
 			});
 			
 			
 			timeArray.push(JSON);
 		});
 	return timeArray;
+}
+
+function toMin(time){
+
+	try{
+			var time = time.split(':');
+		}catch(e){
+			return 0;
+		}
+	if(time[0].trim()=="")
+			return 0;
+		return parseInt(time[0])*60+parseInt(time[1])*1;
 }
 
 
@@ -219,19 +235,25 @@ function timesParse(DOM){
 
 
 
-
-
 function main(){
-    setInterval(function(){
+		var crnCounter=0;
+    var crnInt	=	setInterval(function(){
         _.get({
-            url:COURSE_URL+CRN_ARRAY[parseInt(Math.random()*CRN_ARRAY.length)],
+            url:COURSE_URL+CRN_ARRAY[crnCounter++],
             json:false,
             done:function(html){
 								var document = cheerio.load(html);
 								var courseInfo	=	parseCourseBasic(document);
 								var times	=	timesParse(document);
-								dbParser.pushData()
+								dbParser.pushData(courseInfo,times);
             }
         });
-    },3000);
+			if(crnCounter%100==0){
+				console.log(crnCounter);
+			}
+			if(crnCounter==CRN_ARRAY.length){
+				clearInterval(crnInt);
+				dbParser.createInstant();
+			}
+    },1000);
 }
