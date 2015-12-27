@@ -13,7 +13,16 @@ function fetchNew(){
 				'User-Agent': 'Schedular.io'
 			}
 		},function(error,response,body){
-      dbParser.pushData(body);
+			console.log('got file');
+      body.split('\n').forEach(function(line,i,a){
+				try{
+					line = JSON.parse(line);
+				}catch(e){
+					console.log('Not JSON',line);
+					return;
+				}
+				dbParser.pushData(line);
+			});
   });
 	
 }
@@ -25,7 +34,6 @@ function fetchHash(){
 				'User-Agent': 'Schedular.io'
 			}
 		},function(error,response,body){
-			console.log(body.length);
 			var body    =   JSON.parse(body);
 			if(body.object.hash==lastHash)
 				return;

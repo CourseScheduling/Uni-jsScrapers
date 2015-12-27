@@ -10,6 +10,14 @@ var PHP_NEW_LINE	=	'\r\n';
 exec.exec(cmd, function(error, stdout, stderr) {
   // command output is in stdout
 	
+	// CRN is lineArray	0
+	// Subject is lineArray	1
+	// Code is lineArray 2
+	// Section is lineArray 3
+	// Name is
+	
+	
+	
 	var INFO	=	{
 		crn:"",
 		subject:"",
@@ -20,7 +28,8 @@ exec.exec(cmd, function(error, stdout, stderr) {
 		credits:0.0,
 		campus:"",
 		type:"",
-		status:""
+		status:"",
+		sections:[]
 	};
 	var TIME	=	{
 		startDate:'',
@@ -31,13 +40,14 @@ exec.exec(cmd, function(error, stdout, stderr) {
 		instructor:''
 	}
 	var lines	=	stdout.split(PHP_NEW_LINE);
-	var courses = [];
+	var infoArray	=	[];
 	var prevSection	=	{};
 	
 	lines.forEach(function(line,i,a){
 		var lineArray	=	line.split('!');
 		if(lineArray[0]==' '){
-			prevSection['section'].push	
+			prevSection['section'].push({
+			});
 		}
 		else{
 			INFO.section	=	
@@ -53,8 +63,8 @@ exec.exec(cmd, function(error, stdout, stderr) {
 			INFO.startTime	=	parseTime(lineArray[7])[0];
 			INFO.endTime	=	parseTime(lineArray[7])[1];
 		}
-		dbParser.pushData(INFO);
 	});
+		dbParser.pushData();
 });
 
 function parseTime(time){

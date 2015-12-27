@@ -1,42 +1,74 @@
-var DB	= require('../../db.js');
-var Parser  = {
-  pushData:function(data){
-    var lines = data.split('\n'); //Each line contains its own JSON document.
-    lines.forEach(function(line,index,array){
-			try{
-				var json  = JSON.parse(line); // Parse the JSON in the line
-			}
-			catch(e){
-				console.log(e,'\n',line);
-				return;
-			}
-			var sql	=	"INSERT INTO utoronto.course (code,campus,term,name) VALUES (?,?,?,?)";
-			
-			DB.query(sql,[
-				json.code,
-				json.campus,
-				json.term,
-				json.name
-			],function(e,r){
-				if(e) throw e;
-				var sql	=	"INSERT INTO utoronto.course_info (courseId,description,prereqs,exclusions) VALUES (?,?,?,?)"
-				DB.query(sql,[r.insertId,json.description,json.prerequisites,json.exclusions]);
-				var sql	=	"INSERT INTO utoronto.course_section (courseId,campus,location,sectionUniq,instructor) VALUES (?,?,?,?,?)";
-				json.meeting_sections.forEach(function(section,i,a){
-					DB.query(sql,[r.insertId,json.campus,json.division,section.code,section.instructors.join(',')],function(e,r){
-						var sql	=	"INSERT INTO utoronto.course_time (sectionId,startTime,endTime,days) VALUES(?,?,?,?)";
-						section.times.forEach(function(time,i,a){
-							DB.query(sql,[r.insertId,time.start*60,time.end*60,time.day]);
-						});
-					});
-				});
+//var db	= require('../../db.js');
+var mongoose	=	require('mongoose');
+mongoose.connect('mongodb://localhost:27017/schedular',{},function(){
+	console.log('h');
+});
+
+var courseSchema = new mongoose.Schema({
+  id:String,
+  code:String,
+  name:String,
+  description:String,
+  department:String,
+  prerequisites:String,
+  exclusions:String,
+  level:Number,
+  term:String,
+  sections:{type:Array,default:[]}
+});
+
+
+
+var Course	=	mongoose.model('Course',courseSchema,'course');
+
+
+
+
+
+
+var Parser	=	{};
+var DAYS	=	{
+	"MONDAY":"0",
+	"TUESDAY":"1",
+	"WEDNESDAY":"2",
+	"THURSDAY":"3",
+	"FRIDAY":"4",
+	"SATURDAY":"5",
+	"SUNDAY":"6",
+};
+
+
+Parser.pushData	=	function(line){
+	
+	//console.log('Pushing line...');
+	if(line.meeting_sections!==undefined)
+		line.meeting_sections	=	line.meeting_sections.map(function(a){
+			a.campus	=	line.campus;
+			a.times	=	a.times.map(function(time){
+				time.day	=	DAYS[time.day];
+				return time;
 			});
-    });
-  }
+			return a;
+		});
+	var course	=	new Course({
+		id:line.id,
+		code:line.code,
+		name:line.name,
+		description:line.description,
+  	department:line.department,
+  	prerequisites:line.prerequisites,
+  	exclusions:line.exclusions,
+  	level:line.level,
+  	term:line.term,
+  	sections:line.meeting_sections||[]
+	});
+	course.save(function(err,data){
+		if(err) throw err;
+	});
 }
 
 
 
 
 
-module.exports  = Parser;
+module.exports	=	Parser;
