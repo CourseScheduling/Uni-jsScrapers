@@ -19,7 +19,7 @@ var courseSchema = new mongoose.Schema({
 
 
 
-var Course	=	mongoose.model('Course',courseSchema,'course');
+var Course	=	mongoose.model('Course',courseSchema,'utorontoCourse');
 
 
 
