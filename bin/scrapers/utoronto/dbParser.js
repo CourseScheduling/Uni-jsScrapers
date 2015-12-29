@@ -1,3 +1,43 @@
+/*
+
+	{
+		name:String,
+		code:String,
+		type:Enum(C,L,T), //Stands for Course, Lab, and Tutorial respectively
+		description:String,
+		exclusions:String,
+		preReqs:[
+			[[courseCode]]
+		],
+		coReqs:[
+			[[courseCode]]
+		],
+		sections{
+			uniq:String,
+			section:String,
+			campus:String,
+			instructors:[{
+				teacherName:String,
+				rating:Float,
+				votes:Int,
+			}],
+			times:[{
+				startTime:Int,
+				endTime:Int,
+				day:[Int],
+				location:String,
+				room:String,
+			}],
+			students:{
+				enrolled:Int,
+				waitlisted:Int,
+				max:Int,
+			}
+		}
+	}  
+	
+*/
+
 //var db	= require('../../db.js');
 var mongoose	=	require('mongoose');
 mongoose.connect('mongodb://localhost:27017/schedular',{},function(){
@@ -10,6 +50,7 @@ var courseSchema = new mongoose.Schema({
   name:String,
   description:String,
   department:String,
+	exclusions:String,
   prerequisites:String,
   exclusions:String,
   level:Number,
@@ -54,6 +95,7 @@ Parser.pushData	=	function(line){
 		id:line.id,
 		code:line.code,
 		name:line.name,
+		exclusions:line.exclusions,
 		description:line.description,
   	department:line.department,
   	prerequisites:line.prerequisites,
