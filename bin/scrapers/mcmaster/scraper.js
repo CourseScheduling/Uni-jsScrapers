@@ -13,7 +13,15 @@ _.get({
 	done:function(data){
 		var courses	= data.timetables[YEAR][TERM].courses
 		for(var i in courses)
-			dbParser.pushData(courses[i]);
+			dbParser.pushData(courses[i],);
 	}
 });
 
+function depthInsert(){
+	dbParser.pushData(courses[i],function(){
+		if(i==COURSES.length)
+			cb&&cb();
+		else
+			depthInsert()
+	});
+}

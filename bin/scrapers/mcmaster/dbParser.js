@@ -6,16 +6,17 @@
 		description:String,
 		department:String,
 		exclusions:String,
-		term:String,
+		term:Int,
 		preReqs:[
 			[[courseCode]]
 		],
 		coReqs:[
 			[[courseCode]]
 		],
-		sections[{
+		sections:{
+		
+		C : [{
 			uniq:String,
-			type:Enum(C,L,T), //Stands for Course, Lab, and Tutorial respectively
 			section:String,
 			campus:String,
 			instructors:[{
@@ -34,8 +35,13 @@
 				enrolled:Int,
 				waitlisted:Int,
 				max:Int,
+				full:null
 			}
-		}]
+		}],
+		L:[],
+		T:[]
+		
+		}
 	}  
 	
 */

@@ -1,18 +1,42 @@
+/*
+term codes 
+	{
+	 "0" : "Fall first quarter",
+		"1" : "Fall second quarter",
+		"2" : "Fall semester",
+		"3" : "Spring first quarter",
+		"4" : "Spring second quarter",
+		"5" : "Spring semester",
+		"6" : "Full school year (Fall and spring semesters)",
+		"7" : "Summer first semester first quarter",
+		"8" : "Summer first semester second quarter",
+		"9" : "Summer first semester",
+		"10" : "Summer second semester first quarter",
+		"11" : "Summer second semester second quarter",
+		"12" : "Summer second semester",
+		"13" :  "Full summer",
+		"14" :  "Full year",
+		"15"	: "Winter semester",
+		"16" :  "Not offered",
+		"17" :  "Unscheduled"
+	}
+	
+*/
 
-// Load all the libraries
-var fs  =   require('fs');
-var cheerio = require('cheerio');
-var dbParser	=	require('./dbParser');
-var _   =   require('../../../global');
-
-//require('nw.gui').Window.get().showDevTools() 
 //Our daily reminder
 var JosephIsAwesome =   true;
 //Initialize constants
 var SEMESTER    =   "Winter"; //Can be Summer, Winter or, Fall
-var YEAR    =   "2016"; //Remember this is 1 year after the year you're in typing this.
+var TERM_CODE		=		4;
+var YEAR    =   2016; //Remember this is 1 year after the year you're in typing this.
 var INTERACTIVE_SESSION  =   "322541";
 
+// Load all the libraries
+var fs  =   require('fs');
+var cheerio = require('cheerio');
+var _   =   require('../../../global');
+// Pass some of the initialized variables to the parser
+var dbParser	=	require('./dbParser')(TERM_CODE,YEAR);
 
 var SEMESTER_OBJECT  =   {
     Fall:"09"
@@ -136,7 +160,8 @@ function parseCourseBasic(DOM){
 						case 0:JSON.crn =   parseInt(childValue);break;
 						case 1:
 								var subjectArray    =   childValue.split(' ');
-								JSON.code =   subjectArray[0]+subjectArray[1];
+								JSON.code =   subjectArray[1]
+								JSON.department	=	subjectArray[0];
 								JSON.section =   subjectArray[2];
 						break;
 						case 2:JSON.name    =   childValue;break;
@@ -182,7 +207,7 @@ function timesParse(DOM){
 					case 3:
 						JSON.days	=	data.split(' ').map(function(day){
 							return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(day);
-						}).join('');
+						});
 					break;
 					case 5:
 						JSON.startTime	=	toMin(data.split(' - ')[0]);
