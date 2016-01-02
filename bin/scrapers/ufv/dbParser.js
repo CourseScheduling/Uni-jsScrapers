@@ -206,22 +206,6 @@ Parser.preMangle	=	function(){
 
 
 
-
-
-
-Array.prototype.uniq = function(){
-	 for(var i = 0, l = this.length; i < l; ++i){
-				var item = this[i];
-				var dublicateIdx = this.indexOf(item, i + 1);
-				while(dublicateIdx != -1) {
-						this.splice(dublicateIdx, 1);
-						dublicateIdx = this.indexOf(item, dublicateIdx);
-						l--;
-				}
-	 }
-	 return this;
-}
-
 //My giant thing for mangling.
 
 function Mangler(course){
@@ -300,7 +284,25 @@ function Mangler(course){
 
 
 
-
+Parser.addTeacher	=	function(){
+	var _   =   require('../../../global');
+	_.get({
+		url:'http://search.mtvnservices.com/typeahead/suggest/?solrformat=true&rows=20&callback=&q=schoolid_s%3A1425&defType=edismax&qf=teacherfullname_t%5E1000+autosuggest&bf=pow(total_number_of_ratings_i%2C2.1)&sort=&siteName=rmp&rows=2000&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolid_s',
+		json:true,
+		done:function(e){
+			e.response.docs.forEach(function(v,i,a){
+				db.query('INSERT INTO ufv_teacher_rating (teacherName,rating,votes) VALUES (?,?,?)',[
+					v.teacherfirstname_t+' '+v.teacherlastname_t,
+					v.averageratingscore_rf,
+					v.total_number_of_ratings_i
+				]);
+			});
+		}
+	});
+	function process(a){
+		console.log(a.response.docs);
+	}
+}
 
 
 
