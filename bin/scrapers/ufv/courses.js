@@ -37,7 +37,6 @@ var cheerio = require('cheerio');
 var _   =   require('../../../global');
 // Pass some of the initialized variables to the parser
 var dbParser	=	require('./dbParser')(TERM_CODE,YEAR);
-
 var SEMESTER_OBJECT  =   {
     Fall:"09"
     ,Winter:"01"
@@ -138,7 +137,6 @@ function parseCourseBasic(DOM){
         credits:0.0,
         campus:"",
         type:"",
-        status:"",
 				term:SEMESTER+' '+YEAR
     };
 			var index = 0;
@@ -187,10 +185,13 @@ function timesParse(DOM){
 			var JSON	={
 				startDate:'',
 				endDate:'',
-				days:[''],
-				startTime:'',
-				endTime:'',
-				instructor:''
+				days:[0],
+				start:'',
+				end:'',
+				instructor:'',
+				room:'',
+				online:false,
+				campus:''
 			}
 			if(v==undefined||v.children==undefined||v.children.length==1)
 				return;
@@ -198,24 +199,29 @@ function timesParse(DOM){
 				if(v.type=="text")
 					return;
 				var data	=	v.children[0].data;
-				//console.log(data,i);
+				
 				switch(i){
-					case 1:
-						JSON.startDate	=	data.split(' to ')[0];
-						JSON.endDate	=	data.split(' to ')[1];
-					break;
-					case 3:
-						JSON.days	=	data.split(' ').map(function(day){
-							return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(day);
-						});
-					break;
-					case 5:
-						JSON.startTime	=	toMin(data.split(' - ')[0]);
-						JSON.endTime	=	toMin(data.split(' - ')[1]);
-					break;
-					case 13:
-						JSON.instructor	=	data;
-					break;
+				case 1:
+					JSON.startDate	=	data.split(' to ')[0];
+					JSON.endDate	=	data.split(' to ')[1];
+				break;
+				case 3:
+					JSON.days	=	data.split(' ').map(function(day){
+						return ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].indexOf(day);
+					});
+				break;
+				case 5:
+					JSON.start	=	toMin(data.split(' - ')[0]);
+					JSON.end	=	toMin(data.split(' - ')[1]);
+				break;
+				case 7:
+					JSON.campus	=	data;
+					if(data=="Online")
+						JSON.online=true;
+				break;
+				case 13:
+					JSON.instructor	=	data;
+				break;
 				}
 				
 			});
@@ -237,19 +243,6 @@ function toMin(time){
 			return 0;
 		return parseInt(time[0])*60+parseInt(time[1])*1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
