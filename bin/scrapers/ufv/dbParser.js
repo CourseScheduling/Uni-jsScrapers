@@ -176,4 +176,154 @@ Parser	=	function(termCode,year){
 
 
 
+
+
+
+
+
+
+
+Parser.preMangle	=	function(){
+	var UFV		=	mongo.get('ufvCourse');
+	UFV.find({},function(e,docs){
+		if(e) throw e;
+		docs.forEach(function(course,i,a){
+			var n = Mangler(course);
+			UFV.update({_id:course._id},{
+				$push:{mangled:{$each:n}}
+			},function(e){
+				if(e) throw e;
+			});
+		});
+	})
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+//My giant thing for mangling.
+
+function Mangler(course){
+	var typeArray	=	[];
+	var mangled	=	[];
+	var TIME	=	{
+		inTime:function(start,end,start2,end2){
+				console.log(start,end,start2,end2)
+				if(start==0||start2==0)
+						return false;
+				if((((start2>=start)&&(start2<end))||((end2>start)&&(end2<end)))||(((start>=start2)&&(start<end2))||((end>start2)&&(end<end2))))
+						return !(console.log(start,start2));
+				return false;
+		},
+		sameDay:function(day1,day2){
+				if(day1[0]==-1||day2[0]==-1)
+								return false;
+				for (var i = 0; i < day1.length; i++) {
+						if (day2.indexOf(day1[i]) > -1) {
+								return true;
+						}
+				}
+				return false;
+		}
+	};
+	if(course.sectionTypes.length==1){
+		return course.sections[course.sectionTypes[0]].map(a=>[a.uniq]);
+	}
+	for(var type in course.sections)
+		typeArray.push(course.sections[type]);
+	typeArray.sort((a,b)=>(b.length-a.length));
+	typeArray[0].forEach(function(v,i,a){
+		depther([v],1,typeArray);
+	});
+	mangled	=	mangled.map(	a => a.map(b => b.uniq));
+	return mangled;
+	//make sure to sort the layers by section length before doing this.
+	function	depther(pos,layerIndex,layerArray){
+		var layer	=	layerArray[layerIndex];
+		if(layerIndex>layerArray.length||layer.length==0)
+			return mangled.push(pos);
+		var layerC	=	layer.length;
+		up:
+		while(layerC--){
+			var sectionC	=	pos.length;
+			while(sectionC--){
+				var timeL	=	layer[layerC].times.length;
+				while(timeL--){
+					var timeS	=	pos[sectionC].times.length;
+					while(timeS--){
+						var pST	=	pos[sectionC].times[timeS];
+						var lST	=	layer[layerC].times[timeL];
+						if(TIME.sameDay(pST.days,lST.days)&&TIME.inTime(lST.start,lST.end,pST.start,pST.end)){
+							continue up;
+						}
+					}
+				}
+			}
+			if(layerIndex==layerArray.length)
+				mangled.push(pos);
+			else
+				depther(pos.concat(layer[layerC]),layerIndex+1,layerArray);
+		}
+	}
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 module.exports	=	Parser;
