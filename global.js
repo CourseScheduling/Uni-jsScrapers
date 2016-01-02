@@ -26,6 +26,9 @@ _   =   {
 							console.log('Problem in the UFV scraper');
 							console.log('DEBUG URL: '+e.url);
 							console.log('DEBUG ERROR: '+error);
+							setTimeout(function(){
+								_.get(e);
+							},10000)
               return;
           }
           if(e.json){

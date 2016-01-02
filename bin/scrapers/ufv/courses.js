@@ -27,7 +27,7 @@ term codes
 var JosephIsAwesome =   true;
 //Initialize constants
 var SEMESTER    =   "Winter"; //Can be Summer, Winter or, Fall
-var TERM_CODE		=		4;
+var TERM_CODE		=		15;
 var YEAR    =   2016; //Remember this is 1 year after the year you're in typing this.
 var INTERACTIVE_SESSION  =   "322541";
 
@@ -273,5 +273,5 @@ function main(){
 				clearInterval(crnInt);
 				dbParser.createInstant();
 			}
-    },1000);
+    },300);
 }
