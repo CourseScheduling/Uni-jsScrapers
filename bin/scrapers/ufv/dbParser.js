@@ -209,6 +209,18 @@ Parser.preMangle	=	function(){
 
 
 
+Array.prototype.uniq = function(){
+	 for(var i = 0, l = this.length; i < l; ++i){
+				var item = this[i];
+				var dublicateIdx = this.indexOf(item, i + 1);
+				while(dublicateIdx != -1) {
+						this.splice(dublicateIdx, 1);
+						dublicateIdx = this.indexOf(item, dublicateIdx);
+						l--;
+				}
+	 }
+	 return this;
+}
 
 //My giant thing for mangling.
 
@@ -217,14 +229,13 @@ function Mangler(course){
 	var mangled	=	[];
 	var TIME	=	{
 		inTime:function(start,end,start2,end2){
-				console.log(start,end,start2,end2)
 				if(start==0||start2==0)
 						return false;
 				if((((start2>=start)&&(start2<end))||((end2>start)&&(end2<end)))||(((start>=start2)&&(start<end2))||((end>start2)&&(end<end2))))
-						return !(console.log(start,start2));
+						return true;
 				return false;
 		},
-		sameDay:function(day1,day2){
+		sameArr:function(day1,day2){
 				if(day1[0]==-1||day2[0]==-1)
 								return false;
 				for (var i = 0; i < day1.length; i++) {
@@ -244,11 +255,15 @@ function Mangler(course){
 	typeArray[0].forEach(function(v,i,a){
 		depther([v],1,typeArray);
 	});
-	mangled	=	mangled.map(	a => a.map(b => b.uniq));
+	mangled	=	mangled.filter(a => (a.length==1||a[0].campus==a[1].campus)).map(a => a.map(b => b.uniq)).map(a => JSON.stringify(a)).uniq().map(a => JSON.parse(a));
+	
+	
 	return mangled;
 	//make sure to sort the layers by section length before doing this.
 	function	depther(pos,layerIndex,layerArray){
 		var layer	=	layerArray[layerIndex];
+		if(pos[pos.length-1].campus=="Online: UFV")
+			return mangled.push([pos[pos.length-1]]);
 		if(layerIndex>layerArray.length||layer.length==0)
 			return mangled.push(pos);
 		var layerC	=	layer.length;
@@ -262,7 +277,7 @@ function Mangler(course){
 					while(timeS--){
 						var pST	=	pos[sectionC].times[timeS];
 						var lST	=	layer[layerC].times[timeL];
-						if(TIME.sameDay(pST.days,lST.days)&&TIME.inTime(lST.start,lST.end,pST.start,pST.end)){
+						if(TIME.sameArr(pST.days,lST.days)&&TIME.inTime(lST.start,lST.end,pST.start,pST.end)){
 							continue up;
 						}
 					}

@@ -272,6 +272,7 @@ function main(){
 			if(crnCounter==CRN_ARRAY.length){
 				clearInterval(crnInt);
 				dbParser.createInstant();
+				dbParser.preMangle();
 			}
     },300);
 }
