@@ -291,7 +291,7 @@ Parser.addTeacher	=	function(){
 		json:true,
 		done:function(e){
 			e.response.docs.forEach(function(v,i,a){
-				db.query('INSERT INTO ufv_teacher_rating (teacherName,rating,votes) VALUES (?,?,?)',[
+				db.query('INSERT INTO course.ufv_teacher_rating (teacherName,rating,votes) VALUES (?,?,?)',[
 					v.teacherfirstname_t+' '+v.teacherlastname_t,
 					v.averageratingscore_rf,
 					v.total_number_of_ratings_i
