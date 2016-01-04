@@ -9,7 +9,6 @@
 		exclusions:String,	//Exclusions e.g. "Haters not allowed"
 		term:Int,	//Term is from the term enum from timetablegenerator guy
 		year:Int,	//Year this course is offered
-		status:String,	//Open Closed etc.
 		preReqs:[	
 			[[courseCode]]
 		],
@@ -26,6 +25,7 @@
 		],	//Look at mangled theory in the docs for more info
 		sections:{
 		C : [{
+			status:String,	//Open Closed etc.
 			title:String,	//same as parent title
 			type:ENUM('C','L','T'),	//Type of section
 			uniq:String,	//unique code identifying the section e.g. CRN? Lecture code?
@@ -89,7 +89,6 @@ Parser	=	function(termCode,year){
 				title:main.department+main.code,
 				department:main.department,
 				code:main.code,
-				status:main.status,
 				description:"",
 				exclusions:"",
 				term:termCode,
@@ -110,6 +109,7 @@ Parser	=	function(termCode,year){
 					).uniq();
 			
 			var Section	=	{
+				status:main.status,
 				title:courseJSON.title,
 				type:'',
 				uniq:main.crn,
@@ -165,7 +165,42 @@ Parser	=	function(termCode,year){
 			});
 
 			//ALTER TABLE ufv_course_instant add fulltext INDEX ufvCourse (tags)
+		},
+		preMangle:function(){
+			var UFV		=	mongo.get('ufvCourse');
+			UFV.find({},function(e,docs){
+				if(e) throw e;
+				docs.forEach(function(course,i,a){
+					var n = Mangler(course);
+					UFV.update({_id:course._id},{
+						$push:{mangled:{$each:n}}
+					},function(e){
+						if(e) throw e;
+					});
+				});
+			})
+		},
+		addTeacher:function(){
+			var _   =   require('../../../global');
+			_.get({
+				url:'http://search.mtvnservices.com/typeahead/suggest/?solrformat=true&rows=20&callback=&q=schoolid_s%3A1425&defType=edismax&qf=teacherfullname_t%5E1000+autosuggest&bf=pow(total_number_of_ratings_i%2C2.1)&sort=&siteName=rmp&rows=2000&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolid_s',
+				json:true,
+				done:function(e){
+					e.response.docs.forEach(function(v,i,a){
+						db.query('INSERT INTO course.ufv_teacher_rating (teacherName,rating,votes) VALUES (?,?,?)',[
+							v.teacherfirstname_t+' '+v.teacherlastname_t,
+							v.averageratingscore_rf,
+							v.total_number_of_ratings_i
+						]);
+					});
+				}
+			});
+			function process(a){
+				console.log(a.response.docs);
+			}
 		}
+
+
 	};
 	
 }
@@ -181,22 +216,6 @@ Parser	=	function(termCode,year){
 
 
 
-
-
-Parser.preMangle	=	function(){
-	var UFV		=	mongo.get('ufvCourse');
-	UFV.find({},function(e,docs){
-		if(e) throw e;
-		docs.forEach(function(course,i,a){
-			var n = Mangler(course);
-			UFV.update({_id:course._id},{
-				$push:{mangled:{$each:n}}
-			},function(e){
-				if(e) throw e;
-			});
-		});
-	})
-}
 
 
 
@@ -275,33 +294,6 @@ function Mangler(course){
 	}
 
 
-}
-
-
-
-
-
-
-
-
-Parser.addTeacher	=	function(){
-	var _   =   require('../../../global');
-	_.get({
-		url:'http://search.mtvnservices.com/typeahead/suggest/?solrformat=true&rows=20&callback=&q=schoolid_s%3A1425&defType=edismax&qf=teacherfullname_t%5E1000+autosuggest&bf=pow(total_number_of_ratings_i%2C2.1)&sort=&siteName=rmp&rows=2000&start=0&fl=pk_id+teacherfirstname_t+teacherlastname_t+total_number_of_ratings_i+averageratingscore_rf+schoolid_s',
-		json:true,
-		done:function(e){
-			e.response.docs.forEach(function(v,i,a){
-				db.query('INSERT INTO course.ufv_teacher_rating (teacherName,rating,votes) VALUES (?,?,?)',[
-					v.teacherfirstname_t+' '+v.teacherlastname_t,
-					v.averageratingscore_rf,
-					v.total_number_of_ratings_i
-				]);
-			});
-		}
-	});
-	function process(a){
-		console.log(a.response.docs);
-	}
 }
 
 
