@@ -40,22 +40,28 @@ _   =   {
     },
     post:function(e){
         var tempData    =   '';
-        for(var index in e.data){
-            tempData+=[index,'=',e.data[index],'&'].join('')
-        }
-        tempData=tempData.slice(0,-1);
-        e.data  =   tempData;
+				if(e.raw==undefined){
+					for(var index in e.data){
+							tempData+=[index,'=',e.data[index],'&'].join('')
+					}
+					tempData=tempData.slice(0,-1);
+					e.data  =   tempData;
+				}
         
-        var request = new XMLHttpRequest();
-        request.open('POST',e.url, true);
-        request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-        request.onload = function() {
-          if (request.status >= 200 && request.status < 400) {
-              e.done&&e.done(JSON.parse(request.responseText));
-          }
-        };
-        request.onerror = function() {};
-        request.send(e.data);
+				process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
+
+        request({
+					url:e.url,
+					headers: {
+						'User-Agent': 'Schedular.io'
+					},
+					body:e.data,
+				}, function(error, response, body) {
+          if (response==undefined || error || response.statusCode !== 200) {
+					}
+					e.done(body);
+					
+				});
     }
 }
 module.exports  =   _;

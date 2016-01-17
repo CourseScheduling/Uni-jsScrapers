@@ -47,7 +47,7 @@
 */
 
 var db	= require('../../db.js');
-var mongo	=	require('monk')('mongodb://localhost:27017/schedular');
+var mongo	=	require('monk')('mongodb://joseph123:joseph123@ds033915.mongolab.com:33915/schedular');
 var Course	=	mongo.get('mcmasterCourse')
 
 var Helper	=	{

@@ -1,71 +1,35 @@
-var exec = require('child_process'),
-		dbParser	=	require('./dbParser'),
-    cmd  = 'php scraper.php';
+var dbParser	=	require('./dbParser');
+var _	=	require('../../../global.js');
 
-//CRN!Subject!Course!Section!Credits!Name!Days!Time!Capacity!Actual!Remaining!WLCapacity!WLActual!WLRemaining!XLCapacity!XLActual!XLRemaining!Instructor!Date!Room
-// 0   1        2       3        4    5    6    7    8          9    10         11            12   13               14     15       16             17      18  19
-var PHP_NEW_LINE	=	'\r\n';
+var BASE_URL	=	'https://www.uvic.ca/BAN2P/bwckschd.p_disp_dyn_sched';
+_.get({
+	url:'https://www.uvic.ca/BAN2P/bwckctlg.p_disp_listcrse?term_in=201601&subj_in=CHEM&crse_in=102&schd_in=',
+	done:function(a){
+				console.log(a);
+
+}});
 
 
-exec.exec(cmd, function(error, stdout, stderr) {
-  // command output is in stdout
-	
-	// CRN is lineArray	0
-	// Subject is lineArray	1
-	// Code is lineArray 2
-	// Section is lineArray 3
-	// Name is
-	
-	
-	
-	var INFO	=	{
-		crn:"",
-		subject:"",
-		status:"",
-		code:"",
-		section:"",
-		name:"",
-		credits:0.0,
-		campus:"",
-		type:"",
-		status:"",
-		sections:[]
-	};
-	var TIME	=	{
-		startDate:'',
-		endDate:'',
-		days:[''],
-		startTime:'',
-		endTime:'',
-		instructor:''
-	}
-	var lines	=	stdout.split(PHP_NEW_LINE);
-	var infoArray	=	[];
-	var prevSection	=	{};
-	
-	lines.forEach(function(line,i,a){
-		var lineArray	=	line.split('!');
-		if(lineArray[0]==' '){
-			prevSection['section'].push({
-			});
-		}
-		else{
-			INFO.section	=	
-			INFO.crn			=	lineArray[0];
-			INFO.subject	=	lineArray[1];
-			INFO.status		=	'Open';
-			INFO.code			=	lineArray[2];
-			INFO.section	=	lineArray[3];
-			INFO.name			=	lineArray[5];
-			INFO.credits	=	lineArray[4];
-			INFO.campus		=	'UVic';
-			INFO.days	=	lineArray[6].split('').map(function(a){return ['M','T','W','R','F','S'].indexOf(a)}).join('');
-			INFO.startTime	=	parseTime(lineArray[7])[0];
-			INFO.endTime	=	parseTime(lineArray[7])[1];
-		}
-	});
-		dbParser.pushData();
-});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 
 function parseTime(time){
 	console.log(time);
@@ -89,3 +53,4 @@ function parseTime(time){
 		if(minutes<10) sMinutes = "0" + sMinutes;
 		return sHours + ":" + sMinutes;
 	}
+	*/
