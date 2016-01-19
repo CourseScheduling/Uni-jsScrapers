@@ -93,7 +93,7 @@ function main(data){
 		
 		var _uniqURL	=	[
 			"http://ufv.bookware3000.ca/CourseSearch/?course[0]=",
-			_uniq
+			_uniq,';'
 		].join('');	//create the url to the place where the books are
 		
 		
